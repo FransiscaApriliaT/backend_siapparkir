@@ -8,7 +8,7 @@ const errorHandler  = require('./middleware/errorHandler');
 const app = express();
 
 app.use(cors({
-  origin: "https://frontend-siapparkir.vercel.app/", // Sesuaikan dengan port Vite Anda (biasanya 5173)
+  origin: "https://frontend-siapparkir.vercel.app", // Sesuaikan dengan port Vite Anda (biasanya 5173)
   credentials: true
 }));
 app.use(express.json());
@@ -31,5 +31,5 @@ sequelize.authenticate()
     console.log('✅ Database terhubung');
     return sequelize.sync({ alter: false });
   })
-  .then(() => app.listen(PORT, () => console.log(`🚀 API jalan di http://localhost:${PORT}`)))
+  .then(() => app.listen(PORT, '0.0.0.0', () => console.log(`🚀 API jalan di http://localhost:${PORT}`)))
   .catch(err => { console.error('❌ DB gagal:', err.message); process.exit(1); });
