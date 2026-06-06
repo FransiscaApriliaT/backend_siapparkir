@@ -25,7 +25,7 @@ app.get('/health', (req, res) => res.json({ status: 'ok', app: 'SiapParkir API' 
 
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 sequelize.authenticate()
   .then(() => {
     console.log('✅ Database terhubung');
