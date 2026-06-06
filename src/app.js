@@ -16,10 +16,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Routes
-app.use('/api/',      require('./routes/public.routes'));
-app.use('/api/auth', require('./routes/auth.routes'));
-app.use('/api/admin',   require('./routes/admin.routes'));
-app.use('/api/petugas', require('./routes/petugas.routes'));
+app.use('/',      require('./routes/public.routes'));
+app.use('/auth', require('./routes/auth.routes'));
+app.use('/admin',   require('./routes/admin.routes'));
+app.use('/petugas', require('./routes/petugas.routes'));
 
 app.get('/health', (req, res) => res.json({ status: 'ok', app: 'SiapParkir API' }));
 
