@@ -9,33 +9,51 @@ const { generateKodeLaporan } = require('../utils/kodeGenerator');
 exports.buatLaporan = async (req, res) => {
   try {
     const {
-      nomor_plat, id_kategori, alamat, deskripsi,
-      latitude, longitude, alamat_otomatis,
-      akurasi_lokasi, jenis_kendaraan,
+      nomor_plat,
+      id_kategori,
+      alamat,
+      deskripsi,
+      latitude,
+      longitude,
+      alamat_otomatis,
+      akurasi_lokasi,
+      jenis_kendaraan,
     } = req.body;
 
-    if (!nomor_plat || !alamat || !deskripsi)
-      return fail(res, 'Nomor plat, alamat, dan deskripsi wajib diisi');
+    // Nomor plat dan kategori tidak wajib
+    // Yang wajib hanya alamat dan deskripsi
+    if (!alamat || !deskripsi) {
+      return fail(res, 'Alamat dan deskripsi wajib diisi');
+    }
+
+    // Kalau nomor plat kosong, simpan null
+    const nomorPlatFinal = nomor_plat?.trim()
+      ? nomor_plat.trim().toUpperCase()
+      : null;
+
+    // Kalau kategori kosong, simpan null
+    const idKategoriFinal = id_kategori || null;
 
     let prioritas = 'sedang';
-    if (id_kategori) {
-      const kat = await KategoriPelanggaran.findByPk(id_kategori);
+
+    if (idKategoriFinal) {
+      const kat = await KategoriPelanggaran.findByPk(idKategoriFinal);
       if (kat) prioritas = kat.prioritas_default;
     }
 
     const laporan = await Laporan.create({
-      nomor_plat:    nomor_plat.toUpperCase(),
-      id_kategori,
+      nomor_plat: nomorPlatFinal,
+      id_kategori: idKategoriFinal,
       alamat,
       deskripsi,
-      foto_bukti:    req.file?.filename || null,
+      foto_bukti: req.file?.filename || null,
       latitude,
       longitude,
       alamat_otomatis,
       akurasi_lokasi,
       jenis_kendaraan,
       prioritas,
-      kode_laporan:  generateKodeLaporan(),
+      kode_laporan: generateKodeLaporan(),
       waktu_laporan: new Date(),
       sumber_laporan: 'web_masyarakat',
       status_laporan: 'menunggu_verifikasi',
