@@ -131,7 +131,12 @@ exports.getLaporanList = async (req, res) => {
       include: [
         { model: KategoriPelanggaran, as: 'kategori', attributes: ['nama_kategori'] },
         { model: User, as: 'petugas', attributes: ['id_user','nama','kode_user'], required: false },
-        { model: Tindakan, as: 'tindakan', attributes: ['jenis_tindakan','status_tindakan'], required: false },
+        {
+          model: Tindakan,
+          as: 'tindakan',
+          attributes: ['jenis_tindakan', 'status_tindakan', 'foto_tindakan'],
+          required: false
+        },
       ],
       order: [['created_at', 'DESC']],
       limit:  parseInt(limit),
