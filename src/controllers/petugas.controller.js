@@ -95,7 +95,7 @@ exports.getTugasList = async (req, res) => {
         model: Laporan,
         where: laporanWhere,
         required: false,
-        include: [{ model: KategoriPelanggaran, as: 'kategori', attributes: ['nama_kategori'] }],
+        include: [{ model: KategoriPelanggaran, as: 'kategori', attributes: ['nama_kategori'] }, { model: Tindakan, as: 'tindakan', required: false }],
         attributes: [
           'id_laporan', 'kode_laporan', 'nomor_plat', 'alamat',
           'foto_bukti', 'prioritas', 'status_laporan',
