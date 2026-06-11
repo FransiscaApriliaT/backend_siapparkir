@@ -306,7 +306,7 @@ exports.getLaporanMasuk = async (req, res) => {
       offset,
       attributes: [
         'id_laporan', 'kode_laporan', 'nomor_plat', 'foto_bukti',
-        'alamat', 'status_laporan', 'prioritas', 'is_duplikat',
+        'alamat', 'status_laporan', 'prioritas', 'is_duplikat', 'id_laporan_duplikat', 'skor_duplikat',
         'waktu_laporan', 'created_at',
       ],
     })
@@ -315,7 +315,7 @@ exports.getLaporanMasuk = async (req, res) => {
     const [totalAntrian, belumVerifikasi, indikasi_duplikat] = await Promise.all([
       Laporan.count({ where: { status_laporan: { [Op.in]: ['menunggu_verifikasi','diverifikasi'] } } }),
       Laporan.count({ where: { status_laporan: 'menunggu_verifikasi' } }),
-      Laporan.count({ where: { is_duplikat: 1 } }),
+      Laporan.count({ where: { is_duplikat: 1, status_laporan: { [Op.in]: ['menunggu_verifikasi', 'diverifikasi'] } }}),
     ])
 
     return ok(res, {

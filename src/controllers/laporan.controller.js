@@ -20,18 +20,14 @@ exports.buatLaporan = async (req, res) => {
       jenis_kendaraan,
     } = req.body;
 
-    // Nomor plat dan kategori tidak wajib
-    // Yang wajib hanya alamat dan deskripsi
     if (!alamat || !deskripsi) {
       return fail(res, 'Alamat dan deskripsi wajib diisi');
     }
 
-    // Kalau nomor plat kosong, simpan null
     const nomorPlatFinal = nomor_plat?.trim()
       ? nomor_plat.trim().toUpperCase()
       : null;
 
-    // Kalau kategori kosong, simpan null
     const idKategoriFinal = id_kategori || null;
 
     let prioritas = 'sedang';
@@ -39,6 +35,27 @@ exports.buatLaporan = async (req, res) => {
     if (idKategoriFinal) {
       const kat = await KategoriPelanggaran.findByPk(idKategoriFinal);
       if (kat) prioritas = kat.prioritas_default;
+    }
+
+    let isDuplikat = 0;
+    let idDuplikat = null;
+    let skorDuplikat = null;
+
+    if (nomorPlatFinal) {
+      const tigaPuluhMenitLalu = new Date(Date.now() - 30 * 60 * 1000);
+
+      const laporanSama = await Laporan.findOne({
+        where: {
+          nomor_plat: nomorPlatFinal,
+          waktu_laporan: { [Op.gte]: tigaPuluhMenitLalu },
+          status_laporan: { [Op.notIn]: ['ditolak'] },
+        },
+        order: [['waktu_laporan', 'DESC']],
+      });
+
+      isDuplikat = laporanSama ? 1 : 0;
+      idDuplikat = laporanSama ? laporanSama.id_laporan : null;
+      skorDuplikat = laporanSama ? 90.00 : null;
     }
 
     const laporan = await Laporan.create({
@@ -57,9 +74,19 @@ exports.buatLaporan = async (req, res) => {
       waktu_laporan: new Date(),
       sumber_laporan: 'web_masyarakat',
       status_laporan: 'menunggu_verifikasi',
+
+      is_duplikat: isDuplikat,
+      id_laporan_duplikat: idDuplikat,
+      skor_duplikat: skorDuplikat,
     });
 
-    return ok(res, { kode_laporan: laporan.kode_laporan }, 'Laporan berhasil dikirim', 201);
+    return ok(res, {
+      kode_laporan: laporan.kode_laporan,
+      is_duplikat: isDuplikat === 1,
+      id_laporan_duplikat: idDuplikat,
+      skor_duplikat: skorDuplikat,
+    }, 'Laporan berhasil dikirim', 201);
+
   } catch (err) {
     console.error(err);
     return fail(res, 'Gagal mengirim laporan', 500);
@@ -229,7 +256,7 @@ exports.verifikasiLaporan = async (req, res) => {
     if (!laporan) return fail(res, 'Laporan tidak ditemukan', 404);
 
     await laporan.update({
-      status_laporan: 'diproses',
+      status_laporan: 'diverifikasi',
       petugas_id: petugas_id // Pastikan kolom ini ada di model Laporan
     });
 
